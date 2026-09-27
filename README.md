@@ -2,6 +2,12 @@
 
 Simple post-foothold enumeration script for Linux boxes on Hack The Box.
 
+- Designed for HTB / CTF use
+- Safe (read-only commands only)
+- Output is colorized for easier reading
+- Redirect to a file if you want to review later
+- Combine this with [LinPEAS](https://github.com/peass-ng/PEASS-ng/tree/master/linPEAS) for deeper coverage when possible
+
 ## What it does
 
 Runs the most useful commands after you get a shell (RDP, SSH, etc.):
