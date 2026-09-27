@@ -1,4 +1,4 @@
-# Linux Enum Script (HTB)
+# Linux Enum Script
 
 Simple post-foothold enumeration script for Linux boxes on Hack The Box.
 
