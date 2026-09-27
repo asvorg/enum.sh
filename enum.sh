@@ -11,6 +11,10 @@ section() {
     echo -e "\n${BLUE}========== $1 ==========${NC}"
 }
 
+highlight() {
+    echo -e "${RED}[!] $1${NC}"
+}
+
 echo -e "${GREEN}[+] Linux Enumeration Script - HTB style${NC}"
 echo -e "${YELLOW}[+] Running as: $(whoami) @ $(hostname)${NC}"
 echo -e "${YELLOW}[+] Date: $(date)${NC}"
@@ -25,6 +29,38 @@ echo -e "${GREEN}[*] Hostname & Uptime${NC}"
 hostname
 uptime
 
+# ====================== CONTAINER / VM DETECTION ======================
+section "CONTAINER / VM DETECTION"
+echo -e "${GREEN}[*] Checking for container environment${NC}"
+if [ -f /.dockerenv ]; then
+    highlight "RUNNING IN DOCKER CONTAINER"
+fi
+if [ -f /run/.containerenv ]; then
+    highlight "RUNNING IN PODMAN CONTAINER"
+fi
+if grep -qi "docker" /proc/1/cgroup 2>/dev/null; then
+    highlight "Docker detected in cgroup"
+fi
+if grep -qi "lxc" /proc/1/cgroup 2>/dev/null; then
+    highlight "LXC container detected in cgroup"
+fi
+if grep -qi "kubepods" /proc/1/cgroup 2>/dev/null; then
+    highlight "Kubernetes detected in cgroup"
+fi
+echo
+
+echo -e "${GREEN}[*] Checking for VM environment${NC}"
+if grep -qi "vmware\|virtualbox\|qemu\|xen\|hyperv" /proc/cpuinfo 2>/dev/null; then
+    highlight "VM hypervisor detected in CPU info"
+fi
+if grep -qi "vmware\|virtualbox\|qemu\|xen\|hyperv" /sys/class/dmi/id/sys_vendor 2>/dev/null; then
+    highlight "VM detected via DMI"
+fi
+if [ -d /sys/hypervisor/type ]; then
+    highlight "Hypervisor detected: $(cat /sys/hypervisor/type 2>/dev/null)"
+fi
+dmesg 2>/dev/null | grep -i "hypervisor\|vmware\|virtualbox\|qemu" | head -5
+
 # ====================== CURRENT USER ======================
 section "CURRENT USER"
 id
@@ -33,6 +69,19 @@ groups
 echo
 echo -e "${GREEN}[*] Sudo rights${NC}"
 sudo -l 2>/dev/null || echo "No sudo or password required"
+echo
+echo -e "${GREEN}[*] Checking for NOPASSWD sudo entries${NC}"
+if sudo -l 2>/dev/null | grep -i "nopasswd"; then
+    highlight "NOPASSWD sudo entries found!"
+fi
+if [ -d /etc/sudoers.d ]; then
+    echo -e "${GREEN}[*] Sudoers.d files${NC}"
+    ls -la /etc/sudoers.d 2>/dev/null
+    echo
+    if grep -r "NOPASSWD" /etc/sudoers.d 2>/dev/null; then
+        highlight "NOPASSWD entries found in sudoers.d!"
+    fi
+fi
 
 # ====================== USERS ======================
 section "USERS"
@@ -60,7 +109,19 @@ echo -e "${GREEN}[*] Bash history${NC}"
 cat ~/.bash_history 2>/dev/null | tail -50
 echo
 echo -e "${GREEN}[*] Looking for interesting files in /home${NC}"
-find /home -type f \( -name "*.txt" -o -name "*.conf" -o -name "*.bak" -o -name "*.old" -o -name "*pass*" -o -name "*cred*" -o -name "*.key" -o -name "id_rsa*" \) 2>/dev/null
+find /home -type f \( -name "*.txt" -o -name "*.conf" -o -name "*.bak" -o -name "*.old" -o -name "*.orig" -o -name "*pass*" -o -name "*cred*" -o -name "*.key" -o -name "*.pem" -o -name "id_rsa*" -o -name "*.env" -o -name "*.sqlite" -o -name "*.db" \) 2>/dev/null
+echo
+echo -e "${GREEN}[*] Interesting files in /opt${NC}"
+find /opt -type f \( -name "*.txt" -o -name "*.conf" -o -name "*.bak" -o -name "*.old" -o -name "*.orig" -o -name "*pass*" -o -name "*cred*" -o -name "*.key" -o -name "*.pem" -o -name "id_rsa*" -o -name "*.env" -o -name "*.sqlite" -o -name "*.db" \) 2>/dev/null
+echo
+echo -e "${GREEN}[*] Interesting files in /var/www${NC}"
+find /var/www -type f \( -name "*.txt" -o -name "*.conf" -o -name "*.bak" -o -name "*.old" -o -name "*.orig" -o -name "*pass*" -o -name "*cred*" -o -name "*.key" -o -name "*.pem" -o -name "id_rsa*" -o -name "*.env" -o -name "*.sqlite" -o -name "*.db" \) 2>/dev/null
+echo
+echo -e "${GREEN}[*] SSH keys and authorized_keys${NC}"
+find /home -type f -name "authorized_keys" -o -name "id_rsa*" -o -name "id_dsa*" 2>/dev/null
+echo
+echo -e "${GREEN}[*] Environment files (.env)${NC}"
+find / -path /proc -prune -o -path /sys -prune -o -type f -name ".env" 2>/dev/null | head -20
 
 # ====================== PROCESSES & SERVICES ======================
 section "PROCESSES & SERVICES"
@@ -72,6 +133,9 @@ ss -tulnp 2>/dev/null || netstat -tulnp 2>/dev/null
 echo
 echo -e "${GREEN}[*] Systemd timers${NC}"
 systemctl list-timers --all 2>/dev/null | head -20
+echo
+echo -e "${GREEN}[*] Running systemd services${NC}"
+systemctl list-units --type=service --state=running 2>/dev/null | head -20
 
 # ====================== CRON ======================
 section "CRON JOBS"
@@ -120,4 +184,4 @@ echo -e "${GREEN}[*] Searching for password-like strings (quick)${NC}"
 grep -r -i -E 'password|passwd|pwd|secret|key|token|api_key' /home /opt /var/www /etc 2>/dev/null | grep -v Binary | head -30
 
 echo -e "\n${GREEN}[+] Enumeration finished${NC}"
-echo -e "${YELLOW}[+] Review the output carefully, especially sudo -l, SUID, cron, and home directories${NC}
+echo -e "${YELLOW}[+] Review the output carefully, especially sudo -l, NOPASSWD entries, SUID, cron, and home directories${NC}"
