@@ -15,7 +15,7 @@ highlight() {
     echo -e "${RED}[!] $1${NC}"
 }
 
-echo -e "${GREEN}[+] Linux Enumeration Script - HTB style${NC}"
+echo -e "${GREEN}[+] Linux Enumeration Script${NC}"
 echo -e "${YELLOW}[+] Running as: $(whoami) @ $(hostname)${NC}"
 echo -e "${YELLOW}[+] Date: $(date)${NC}"
 
