@@ -97,6 +97,17 @@ echo
 echo -e "${GREEN}[*] /etc/group (interesting groups)${NC}"
 grep -E 'sudo|admin|docker|lxd|adm|wheel' /etc/group 2>/dev/null
 
+# ====================== NETWORK ======================
+@@
+ echo -e "${GREEN}[*] Listening ports (netstat)${NC}"
+ netstat -tulnp 2>/dev/null | grep LISTEN || echo "netstat not available"
+ echo
++echo -e "${GREEN}[*] Listening ports (ss)${NC}"
++ss -tulnp 2>/dev/null || echo "ss command not available"
++echo
+ echo -e "${GREEN}[*] Routing table${NC}"
+ route -n 2>/dev/null || ip route 2>/dev/null
+
 # ====================== HOME & INTERESTING FILES ======================
 section "HOME DIRECTORIES & FILES"
 echo -e "${GREEN}[*] Listing /home${NC}"
