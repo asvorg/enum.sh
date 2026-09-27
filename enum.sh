@@ -109,5 +109,4 @@ echo -e "${GREEN}[*] Bash history${NC}"
 cat ~/.bash_history 2>/dev/null | tail -50
 echo
 echo -e "${GREEN}[*] Looking for interesting files in /home${NC}"
-find /home -type f \( -name "*.txt" -o -name "*.conf" -o -name "*.bak" -o -name "*.old" -o -name "*.orig" -o -name "*pass*" -o -name "*cred*" -o -name "*.key" -o -name "*.pem" -o -name "*.p12" -o -name "*.pfx" -o -name "id_rsa*" -o -name "*.env" -
-
+find /home -type f \(-name "*.txt" -o -name "*.conf" -o -name "*.bak" -o -name "*.old" -o -name "*.orig" -o -name "*pass*" -o -name "*cred*" -o -name "*.key" -o -name "*.pem" -o -name "*.p12" -o -name "*.pfx" -o -name "id_rsa*" -o -name "*.env"\) 2>/dev/null
