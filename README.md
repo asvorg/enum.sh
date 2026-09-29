@@ -10,7 +10,7 @@ Simple post-foothold enumeration script for Linux boxes on Hack The Box.
 
 ## What it does
 
-Runs the most useful commands after you get a shell (RDP, SSH, etc.):
+Runs the most useful commands after you get a shell (RDP, SSH, reverse etc.):
 
 - System & kernel info
 - Current user / groups / sudo rights
